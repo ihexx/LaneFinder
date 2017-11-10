@@ -8,6 +8,7 @@ import numpy as np
 import os
 import params
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 
 def debugDislay(x):
     if params.DEBUG_MODE:
@@ -65,7 +66,7 @@ def frameTransform(x):
     color_drop[select_white] = [255, 255, 255]
     debugDislay(color_drop)
 
-    frame = cv2.cvtColor(color_drop,cv2.COLOR_RGB2GRAY)
+    frame = cv2.cvtColor(frame,cv2.COLOR_RGB2GRAY)
 
 
     shape = np.shape(frame)
@@ -110,6 +111,8 @@ def frameTransform(x):
                    | (YY > (XX * model_line[3][0] + model_line[3][1]))
 
     frame[select_space] = 0
+    select_WY = select_white | select_yellow
+    frame[~select_WY] = 0
 
     lines = cv2.HoughLinesP(frame,
                             params.houghLineResolution,
@@ -118,8 +121,9 @@ def frameTransform(x):
                             lines=np.array([]),
                             minLineLength=params.houghLineMinLength,
                             maxLineGap=params.houghMaxLineGap)
-    lineImage = np.zeros_like(x)
 
+    gradients = []
+    intercept = []
     try:
         for line in lines:
             for x1,y1,x2,y2 in line:
@@ -127,8 +131,10 @@ def frameTransform(x):
                 if abs((y2-y1)/(x2-x1))>params.lineHighGradientLimit or \
                                 abs((y2 - y1) / (x2 - x1)) < params.lineLowGradientLimit:
                     continue
-                cv2.line(lineImage,(x2,y2),(x1,y1),(0,127,255),3)
+                gradients.append((y2-y1)/(x2-x1))
+                intercept.append(y1-gradients[-1]*x1)
         error_flag = False
+        print(len(lines))
     except:
         plt.imshow(x)
         plt.show()
@@ -138,6 +144,27 @@ def frameTransform(x):
         plt.show()
         params.DEBUG_MODE = True
         error_flag= True
+    # Average lines
+    linePoints = np.asarray([gradients,intercept])
+    linePoints.transpose()
+    print(linePoints.shape)
+    km=KMeans(2)
+    km.fit(linePoints.transpose())
+    centroids = km.cluster_centers_
+    print(centroids)
+
+    # Sample Averages : Top and bottom of visibility space
+    average_lines = []
+    lineImage = np.zeros_like(x)
+    for i in range(len(centroids)):
+
+
+        y1 = int(mask_points[i*3][1])
+        y2 = int(mask_points[i+1][1])
+        x1 = int((y1 - centroids[i][1])/centroids[i][0])
+        x2 = int((y2 - centroids[i][1])/centroids[i][0])
+        cv2.line(lineImage, (x2, y2), (x1, y1), (0, 127, 255), 3)
+    lineImage[select_space] = [0,0,0]
     output = cv2.addWeighted(x,1,
                              lineImage,1,0)
     maskHighlighter = np.zeros_like(x)
