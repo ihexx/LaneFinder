@@ -64,6 +64,7 @@ def frameTransform(x):
 
     select_WY = select_white | select_yellow
     color_drop[~select_WY]=[0,0,0]
+    debugDislay(color_drop)
 
     # Noise Removal
     frame = cv2.cvtColor(color_drop,cv2.COLOR_RGB2GRAY)
@@ -73,12 +74,14 @@ def frameTransform(x):
         frame,
         kernel,
         params.gaussSigma)
+    debugDislay(frame)
 
 
     # Canny Edge Detection
     frame_canny = cv2.Canny(frame,
                       params.cannyLowThreshMul * white,
                       params.cannyLowThreshMul * white)
+    debugDislay(frame_canny)
 
     # Mask
     mask_points = [[width * params.maskBaseX, params.maskBaseY * height], \
@@ -104,6 +107,7 @@ def frameTransform(x):
                    | (YY > (XX * model_line[3][0] + model_line[3][1]))
 
     frame_canny[select_space] = 0
+    debugDislay(frame_canny)
     debugDislay2(frame, frame_canny)
 
     # Hough Transform
@@ -202,7 +206,7 @@ def frameTransform(x):
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description='Process Video pipeline and print results.')
     parser.add_argument('--input', '-i', type=str,
-                        help='Input video path',default='test_videos/solidWhiteRight.mp4')
+                        help='Input video path',default='test_videos/challenge.mp4')
     parser.add_argument('--output', '-o', type=str,
                         help='Output video path', default='output_videos/out.mp4')
     args = parser.parse_args()

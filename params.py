@@ -1,6 +1,6 @@
 from numpy import pi
 frame_number =0
-DEBUG_MODE = False
+DEBUG_MODE = True
 DISPLAY_DATA = False
 
 # Color Select
