@@ -1,20 +1,29 @@
-# **LaneFinder**
-
-**Overview**
-___
+Lane Finder
+===================
 
 
-**TO-Do**
-___
-1. Video to picture series to Video pipeline [++ Description]
+Given an input dash cam video, this finds and highlights the **left and right** lanes pictured therein.  
 
-2. Picture series + Segmentation + Canny params + Hough params.
 
-3. Stress cases and stabilize
+----------
 
-Extras
 
-- Winnowing down to 2 lines per segment
-- Time filtering segment movement?
-- Joining segments at boundaries with 1st order approx
-  - Second order approx
+**Requirements** <i class="icon-cog"></i>
+-------------
+
+ - Python3
+ - Numpy
+ - **Sklearn**
+ - MoviePy
+ - OpenCv (cv2)
+ - Matplotlib
+
+All should be available via pip install
+
+--------
+**Usage**
+------
+on Linux:
+git clone / download the repo and cd into it.
+> $ **python3 videoPipeline.py** -i *input_video.mp4*  -o *output_video.mp4*
+
